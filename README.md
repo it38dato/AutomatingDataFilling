@@ -16,6 +16,7 @@
 # Подключиться к базе.
 # В какой базе находится таблица LNHOIF.
 # Найти в какой таблице и базе находятся незаполненные данные из CES.
+# Найти незаполненные данные 2g, 4g из CES в базе данных.
 Skills:
 # Разработка Команды для работы с программой.
 # Разработка Список данных.
@@ -74,3 +75,21 @@ PS C:\Windows\system32> python .\encoding.py
 {'encoding': 'ascii', 'confidence': 1.0, 'language': ''}
 PS C:\Windows\system32> python .\encoding.py
 {'encoding': 'UTF-8-SIG', 'confidence': 1.0, 'language': ''}
+Task:
+Найти незаполненные данные 2g, 4g из CES в базе данных.
+# Разработка Анализ данных в базе.
+Decision:
+PS C:\Windows\system32> python .\querryManager.py
+['Показать список баз (1)', 'В какой базе находится определенная таблица (2)', 'Найти строки во всей базе, в которой есть определенная имя базовая станции (3)', 'Найти строки в одной базе, в которой есть определенная имя базовая станции (4)', 'Выборка (5)']
+Выполните действия от 1 до : 5
+Выберите базу: tdb
+Выберите столбцы: *
+Выберите таблицу: table_ericsson_2g_v
+Выберите условие: WHERE Reg='VV' AND BSS IS NULL ORDER BY Date DESC LIMIT 5
+(73459, datetime.datetime(2024, 12, 24, 10, 59, 53), None, None, None, 'OK', 'VV', '-', 'VV455-B', 'true', '-', '-', None, None, 'VV2551', '0522', None, None, 'Край Приморский, Город Уссурийск, Улица, Дом 67', None, None, None, 'Radio22xx', 'AB', 'false', 'BB Port A', '6630', 'GSM1800', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 'TN_C', 'BB/TN_C/copper')
+Взято из Базы: tdb Таблицы: table_ericsson_2g_v
+(73460, datetime.datetime(2024, 12, 24, 10, 59, 53), None, None, None, 'OK', 'VV', '-', 'VV455-B', 'true', '-', '-', None, None, 'VV2552', '0522', None, None, 'Край Приморский, Город Уссурийск, Улица, Дом 67', None, None, None, 'Radio22xx', 'AB', 'false', 'BB Port B', '6630', 'GSM1800', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 'TN_C', 'BB/TN_C/copper')
+Взято из Базы: tdb Таблицы: table_ericsson_2g_v
+(73461, datetime.datetime(2024, 12, 24, 10, 59, 53), None, None, None, 'OK', 'VV', '-', 'VV255-B', 'true', '-', '-', None, None, 'VV2553', '0522', None, None, 'Край Приморский, Город Уссурийск, Улица, Дом 67', None, None, None, 'Radio22xx', 'AB', 'false', 'BB Port C', '6630', 'GSM1800', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 'TN_C', 'BB/TN_C/copper')
+Взято из Базы: tdb Таблицы: table_ericsson_2g_v
+Do you want to continue? (y/n): n
