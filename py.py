@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+import numpy as np
 #1 перечислить список команд, которые может выполнить программа:
 repeat="y"
 with open("output.txt", "w") as outfile:
@@ -141,28 +142,39 @@ while repeat == "y":
         print("Получил таблицы 2g, 4g")
         tableBs2g = pd.merge(unloading2g, ces2g, left_on='Sector_name', right_on='Sector_name', how='inner')
         tableBs4g = pd.merge(unloading4g, ces4g, left_on='Sector_name', right_on='Sector_name', how='inner')
-        #print(tableBs2g)
-        #print(tableBs4g)
+        print(tableBs2g)
+        print(tableBs4g)
         print("Корректирую данные из файла")
-        print(newbslist)
+        #print(newbslist)
         #print(" - вывожу Список базовых станций")
-        print(coordlist)
+        #print(coordlist)
         #print(" - вывожу Список координат")
         remainder = (len(coordlist)//len(newbslist))
         #print(remainder)
         for numeration in range(len(newbslist)):
             #print(numeration)
             datasites[newbslist[numeration]] = [coordlist[y] for y in range(remainder*numeration,remainder*numeration+remainder)]
-        print(datasites)
+        #print(datasites)
         print(" - Добавляю словарь с названиями базовых станций и координатами.")
         cols = ["longitude", "latitude"]
-        rdbfile2g = pd.DataFrame()
-        rdbfile2g = pd.DataFrame.from_dict(datasites, orient='index', columns=cols)
-        rdbfile2g = rdbfile2g.reset_index()
-        print(rdbfile2g)
+        newdatatable = pd.DataFrame()
+        newdatatable = pd.DataFrame.from_dict(datasites, orient='index', columns=cols)
+        newdatatable = newdatatable.reset_index()
+        #print(newdatatable)
+        delcol=newdatatable["index"]
+        newdatatable=newdatatable.drop("index", axis=1)
+        newdatatable.insert(0, "newbs", delcol)
+        delcol=newdatatable["longitude"]
+        newdatatable=newdatatable.drop("longitude", axis=1)
+        newdatatable.insert(1, "longitudeY1", delcol)
+        delcol=newdatatable["latitude"]
+        newdatatable=newdatatable.drop("latitude", axis=1)
+        newdatatable.insert(2, "latitudeX1", delcol)
+        #print(newdatatable)
+        print(" - Добавляю таблицу из словаря.")
         #6 Отсортировать файлы, собранные из rdb, в котором есть данные LAC И BSC:
         netpath = "data/"
-        print("Корректирую данные из rdb")
+        print("Корректирую данные из файла")
         lengthdir=len(netpath)
         listreg=["IRK","MGD","SAH","KHA","KAM"]
         for root, dirs, files in os.walk(netpath):
@@ -186,7 +198,6 @@ while repeat == "y":
                             file = rdbfile.read()
                         #print(file) 
                         #7 Добавить данные LAC и BSC в таблицу:
-                        print("Корректирую данные из rdb файлов:")
                         Placemark = re.findall(r"<Placemark>(.*?)</Placemark>", file, re.DOTALL)
                         for i in Placemark:
                             #print(i)
@@ -203,8 +214,8 @@ while repeat == "y":
                                     for bs in listbs:
                                         if (len(bs)==6) == True:
                                             #print(bs)
-                                            with open("output.txt", "a") as outfile:
-                                                outfile.write(bs+"\n")
+                                            #with open("output.txt", "a") as outfile:
+                                            #    outfile.write(bs+"\n")
                                             oldbslist.append(bs)
                                             #print(" - Добавляю в Список название")
                                         else:
@@ -221,8 +232,8 @@ while repeat == "y":
                                         latitude = coordinates[1]
                                         #print(longitude + " " + latitude + "\n")
                                         #print(" - корректирую заполнение координат")
-                                        with open("output.txt", "a") as outfile:
-                                            outfile.write(longitude + " " + latitude + "\n")
+                                        #with open("output.txt", "a") as outfile:
+                                        #    outfile.write(longitude + " " + latitude + "\n")
                                         olddatalist.append(longitude)
                                         olddatalist.append(latitude)
                                         #print(" - Добавляю в Список коорднат")
@@ -237,8 +248,8 @@ while repeat == "y":
                                         lac = data[1]
                                         #print(bsc + " " + lac + "\n")
                                         #print(" - корректирую заполнение LAC и BSC")
-                                        with open("output.txt", "a") as outfile:
-                                            outfile.write(bsc + " " + lac + "\n")
+                                        #with open("output.txt", "a") as outfile:
+                                        #    outfile.write(bsc + " " + lac + "\n")
                                         olddatalist.append(bsc)
                                         olddatalist.append(lac)
                                         #print(" - Добавляю в Список LAC и BSC")
@@ -268,6 +279,50 @@ while repeat == "y":
             dataloldsites[oldbslist[numeration]] = [olddatalist[y] for y in range(remainder*numeration,remainder*numeration+remainder)]
         #print(dataloldsites)
         print(" - Добавляю словарь с названиями соседних базовых станций и координатами, LAC И BSC.")
+        #9 Добавить в пустую таблицу данные из словаря:
+        cols = ["longitude", "latitude", "BSC", "LAC"]
+        olddatatable = pd.DataFrame()
+        olddatatable = pd.DataFrame.from_dict(dataloldsites, orient='index', columns=cols)
+        olddatatable = olddatatable.reset_index()
+        delcol=olddatatable["index"]
+        olddatatable=olddatatable.drop("index", axis=1)
+        olddatatable.insert(0, "oldbs", delcol)
+        delcol=olddatatable["longitude"]
+        olddatatable=olddatatable.drop("longitude", axis=1)
+        olddatatable.insert(1, "longitudeY2", delcol)
+        delcol=olddatatable["latitude"]
+        olddatatable=olddatatable.drop("latitude", axis=1)
+        olddatatable.insert(2, "latitudeX2", delcol)
+        #print(olddatatable)
+        print(" - Добавляю таблицу из словаря.")
+        #10 Найти ближайшего соседа базовой станции по формуле sqrt((x1-x2) * (x1-x2) + (y1-y2) * (y1-y2)):
+        newNeighbourTable = newdatatable.merge(olddatatable, how='cross')        
+        print(" - Добавляю общую таблицу.")
+        x1=newNeighbourTable["latitudeX1"].astype(float)
+        x2=newNeighbourTable["latitudeX2"].astype(float)
+        y1=newNeighbourTable["longitudeY1"].astype(float)
+        y2=newNeighbourTable["longitudeY2"].astype(float)
+        newNeighbourTable["distance"] = ""
+        #newNeighbourTable["distance"] = math.sqrt((x1-x2) * (x1-x2) + (y1-y2) * (y1-y2))  
+        #for i, row in newNeighbourTable.iterrows():
+            #df_index = newNeighbourTable.loc[i]
+            #results = math.sqrt((float(df_index["latitudeX1"]) - float(df_index["latitudeX2"])) * (float(df_index["latitudeX1"]) - float(df_index["latitudeX2"])) + (float(df_index["longitudeY1"]) - float(df_index["longitudeY2"])) * (float(df_index["longitudeY1"]) - float(df_index["longitudeY2"])))
+            #newNeighbourTable["distance"] = results
+        #sqrt((52,778068 - 52,2655474988944) * (52,778068 - 52,2655474988944) + (105,998790 - 104,22578286633) * (105,998790 - 104,22578286633))  0,26267726405353533082235136 + 3,1435542960447092476689 3,40623156009824457849125136
+        newNeighbourTable["distance"] = np.sqrt((x1-x2) * (x1-x2) + (y1-y2) * (y1-y2))
+        #print(newNeighbourTable.dtypes)
+        print("- Добавляю стобец distance применив формулу")
+        #print(newNeighbourTable)
+        grouped_data = newNeighbourTable.groupby("newbs")
+        mindistance = grouped_data["distance"].min()
+        #print(mindistance)
+        print("- Группировка по БС и минимальному значению расстоянию")
+        mindistancetable = pd.DataFrame()
+        mindistancetable = mindistance.reset_index()
+        #print(mindistancetable)        
+        newBsTable = pd.merge(mindistancetable, newNeighbourTable, left_on='distance', right_on='distance', how='inner')
+        print(newBsTable)
+        print("- Добавляю в новую таблицу актуальный данные")
     elif choicecmd == '2':
         print("Ты выбрал Заполненние данных для БС Ericsson")
         with open("output.txt", "a") as outfile:
