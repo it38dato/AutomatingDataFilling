@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import re
 #1 перечислить список команд, которые может выполнить программа:
 repeat="y"
 with open("output.txt", "w") as outfile:
@@ -20,7 +21,7 @@ while repeat == "y":
         #with open("output.txt", "a") as outfile:
         #    outfile.write("Для заполнения нужны следующие данные: "+listtemplate[0]+","+listtemplate[1]+","+listtemplate[2]+","+listtemplate[3]+","+listtemplate[4]+","+listtemplate[5]+","+listtemplate[6]+","+listtemplate[7]+","+listtemplate[8]+","+listtemplate[9]+","+listtemplate[10]+","+listtemplate[11]+"\n")
         #3 Найти незаполненные строки БС IR2468 в таблице из CES для каждых технологий - 2g, 4g:
-        print("ВНИМАНИЕ! Выгрузите таблицу с незаполненными данными из CES и поместите файл в папку unloading, также добавьте файл еженедельной выгрузки!")    
+        print("ВНИМАНИЕ! Выгрузите таблицу с незаполненными данными из еженедельной выгрузки, из сайтов CES и RDB и поместите файл в папку unloading.")    
         path = "unloading/"
         #files = [file for file in os.listdir(path) if not file.startswith('.')]
         listfiles = os.listdir(path)
@@ -29,6 +30,8 @@ while repeat == "y":
         ces4g = pd.DataFrame()
         unloading2g = pd.DataFrame()
         unloading4g = pd.DataFrame()
+        newbslist=[]
+        coordlist=[]
         for file in listfiles:
             print("Считываю данные из файла: ", file)
             #4 Добавить имееющиеся данные в таблице из еженедельной выгрузки:
@@ -59,6 +62,41 @@ while repeat == "y":
                 unloading2g = pd.concat([unloading2g,table2g]) 
                 unloading4g = pd.concat([unloading4g,table4g]) 
                 print("Успешно прочитал данные из файла: ", file)
+            #5 Добавить данные координат в таблицу из rdb.:
+            elif "Site_" in file:
+                #print("Это выгрузка из сайта RDB")
+                with open(path+"/"+file,"r", encoding="utf8") as rdbfile:
+                    inputfile = rdbfile.read()
+                print("Корректирую данные из файла")
+                #print(inputfile)
+                Placemark = re.findall(r'<Placemark>(.*?)</Placemark>', inputfile, re.DOTALL)
+                for i in Placemark:
+                    #print(i)
+                    listbs = re.findall(r'<name>(.*?)</name>', i, re.DOTALL)
+                    #print(listbs)
+                    for bs in listbs:
+                        if '/' in bs:
+                            bs = bs.split('/')[0]
+                            i1 = 2
+                            i2 = 3
+                            bs = bs[:i1] + bs[i2+1:]
+                            newbslist.append(bs)
+                            #print(newbslist)                       
+                            #print(bs)
+                        else:
+                            print("Имя базой станции другого формата!")
+                coordinates = re.findall(r'<coordinates>(.*?)</coordinates>', i, re.DOTALL)
+                #print(coordinates)
+                for coords in coordinates:
+                    #print(coords)
+                    longitude = coords.split(',')[0]
+                    latitude = coords.split(',')[1]
+                    #print(longitude + " " + latitude + "\n")
+                    coordlist.append(longitude)
+                    coordlist.append(latitude)
+                print("Успешно прочитал данные из файла: ", file)
+                #6 Добавить данные LAC и BCF в таблицу из rdb:
+                
             else:
                 #print("Это выгрузка из сайта CES")
                 print("Корректирую таблицы")
@@ -95,8 +133,23 @@ while repeat == "y":
         print("Получил таблицы 2g, 4g")
         tableBs2g = pd.merge(unloading2g, ces2g, left_on='Sector_name', right_on='Sector_name', how='inner')
         tableBs4g = pd.merge(unloading4g, ces4g, left_on='Sector_name', right_on='Sector_name', how='inner')
-        print(tableBs2g)
-        print(tableBs4g)
+        #print(tableBs2g)
+        #print(tableBs4g)
+        print("Корректирую данные из rdb")
+        #print(newbslist)
+        #print(coordlist)
+        datasites = dict()
+        remainder = (len(coordlist)//len(newbslist))
+        #print(remainder)
+        for numeration in range(len(newbslist)):
+            #print(numeration)
+            datasites[newbslist[numeration]] = [coordlist[y] for y in range(remainder*numeration,remainder*numeration+remainder)]
+        #print(datasites)
+        cols = ["longitude", "latitude"]
+        rdbfile2g = pd.DataFrame()
+        rdbfile2g = pd.DataFrame.from_dict(datasites, orient='index', columns=cols)
+        rdbfile2g = rdbfile2g.reset_index()
+        print(rdbfile2g)
     elif choicecmd == '2':
         print("Ты выбрал Заполненние данных для БС Ericsson")
         with open("output.txt", "a") as outfile:
