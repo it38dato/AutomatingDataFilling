@@ -32,6 +32,7 @@ while repeat == "y":
         unloading4g = pd.DataFrame()
         newbslist=[]
         coordlist=[]
+        prefixs=[]
         for file in listfiles:
             print("Считываю данные из файла: ", file)
             #4 Добавить имееющиеся данные в таблице из еженедельной выгрузки:
@@ -83,6 +84,11 @@ while repeat == "y":
                             newbslist.append(bs)
                             #print(newbslist)                       
                             #print(bs)
+                            #6 Отсортировать файлы, собранные из rdb, в котором есть данные LAC И BSC:
+                            prefix = bs[:2]
+                            prefixs.append(prefix)
+                            prefixs = list(dict.fromkeys(prefixs))
+                            #print(prefix)
                         else:
                             print("Имя базой станции другого формата!")
                 coordinates = re.findall(r'<coordinates>(.*?)</coordinates>', i, re.DOTALL)
@@ -95,8 +101,6 @@ while repeat == "y":
                     coordlist.append(longitude)
                     coordlist.append(latitude)
                 print("Успешно прочитал данные из файла: ", file)
-                #6 Добавить данные LAC и BCF в таблицу из rdb:
-                
             else:
                 #print("Это выгрузка из сайта CES")
                 print("Корректирую таблицы")
@@ -150,6 +154,29 @@ while repeat == "y":
         rdbfile2g = pd.DataFrame.from_dict(datasites, orient='index', columns=cols)
         rdbfile2g = rdbfile2g.reset_index()
         print(rdbfile2g)
+        #6 Отсортировать файлы, собранные из rdb, в котором есть данные LAC И BSC:
+        netpath = "data/"
+        lengthdir=len(netpath)
+        listreg=['IRK','MGD','SAH','KHA','KAM']
+        for root, dirs, files in os.walk(netpath):
+            alldir = root[lengthdir:]
+            #print(alldir) 
+            if ("old" in alldir):
+                #print("FALSE")
+                continue
+            elif alldir in listreg:
+                print(alldir)
+                for kmlfile in files:
+                    print(kmlfile)
+                    if prefixs[0] in kmlfile:
+                        #print("Это выгрузка из всех сайтов RDB")
+                        print(kmlfile)
+                        with open(kmlfile,"r", encoding="utf8") as rdbfile:
+                            file = rdbfile.read()
+                        #print(file)
+            else:
+                #print("TRUE")
+                continue
     elif choicecmd == '2':
         print("Ты выбрал Заполненние данных для БС Ericsson")
         with open("output.txt", "a") as outfile:
