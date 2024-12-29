@@ -17,7 +17,7 @@ try:
     with open("output.log", "a") as outfile:
         outfile.write("... Подключаюсь к БД."+"\n")
     mydb = mysql.connector.connect(
-        host="tipNokia",
+        host="tipNikoa",
         user="tuser",
         password="tpassword",
     )
@@ -29,8 +29,6 @@ except mysql.connector.errors.ProgrammingError:
          outfile.write("- Error connecting to MYSQL Platform:\n")
 mycursor = mydb.cursor()
 with open("output.log", "w") as outfile:
-    outfile.write("")
-with open("output.txt", "w") as outfile:
     outfile.write("")
 while repeat == "y":
     listcmd = [
@@ -123,7 +121,7 @@ while repeat == "y":
                     #print(tb)
                     try:
                         querrysel = "SELECT * FROM "+db+"."+tb+" WHERE "+rowTable+"='"+lineData+"'"
-                        #querrysel = "SELECT * FROM "+db+"."+tb+" WHERE BS_name='IO0129'"
+                        #querrysel = "SELECT * FROM "+db+"."+tb+" WHERE BS_name='IO019'"
                         #print(querrysel)
                         mycursor.execute(querrysel)
                         result = mycursor.fetchall()
@@ -150,7 +148,7 @@ while repeat == "y":
             if querryDb == db:
                 try:
                     querrySel = "SELECT "+querryCol+" FROM "+db+"."+querryTb+" "+querryConditions
-                    #querrySel = "SELECT * FROM CreateSite.table_ericsson_2g_v WHERE Reg='VV' AND BSS IS NULL ORDER BY Date DESC LIMIT 5"
+                    #querrySel = "SELECT BSS, Reg, BS_name, CELL FROM tdb.table_ericsson_2g_v WHERE Reg='VV' AND BSS IS NULL ORDER BY Date DESC LIMIT 5"
                     #print(querrySel)
                     mycursor.execute(querrySel)
                     result = mycursor.fetchall()
@@ -166,7 +164,10 @@ while repeat == "y":
             else:
                 continue
     else:
-        print("Введите y/n")
+        print("Введите y/n")        
+
+
+
     repeat = input("Do you want to continue? (y/n): ")
     if repeat == "n":
         break
